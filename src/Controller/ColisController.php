@@ -85,7 +85,9 @@ class ColisController extends AbstractController
     public function show(
         Colis $colis,
         Request $request,
+        EntityManagerInterface $entityManager
     ): Response {
+        
         $mouvement = (new MouvementColis())
             ->setColis($colis);
 
@@ -97,13 +99,21 @@ class ColisController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            
+            $statut = $mouvement->getStatut();
+
+            $colis->setStatut($statut);
+
+            $entityManager->persist($mouvement);
+
+            $entityManager->flush();
 
             $this->addFlash(
                 'success',
                 sprintf(
                     'Le colis %s possède maintenant le statut « %s ».',
                     $colis->getNumeroSuivi(),
-                    $mouvement->getStatut()->label()
+                    $statut->label()
                 )
             );
 
