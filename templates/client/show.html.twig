@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+	<h1>{{ item.nom }}</h1>
+	<div class='card p-3'>
+		<pre>ID: {{ item.id }}
+		Ville: {{ item.ville }}
+		</pre>
+		<a class='btn btn-dark' href='{{ path('app_client_edit',{id:item.id}) }}'>Modifier</a>
+		<form method='post' action='{{ path('app_client_delete',{id:item.id}) }}' onsubmit='return confirm("Supprimer ?")'>
+			<input type='hidden' name='_token' value='{{ csrf_token('delete' ~ item.id) }}'>
+			<button class='btn btn-danger mt-2'>Supprimer</button>
+		</form>
+	</div>
+{% endblock %}

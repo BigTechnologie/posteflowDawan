@@ -1,0 +1,261 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">
+                Tableau de bord
+            </h1>
+
+            <p class="text-muted mb-0">
+                Vue d’ensemble de l’activité PosteFlow.
+            </p>
+        </div>
+
+        <a
+            class="btn btn-dark"
+            href="{{ path('app_colis_new') }}"
+        >
+            Nouveau colis
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold">
+                        {{ nbClients }}
+                    </div>
+
+                    <div class="text-muted">
+                        Clients
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold">
+                        {{ nbAgences }}
+                    </div>
+
+                    <div class="text-muted">
+                        Agences
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold">
+                        {{ stats.derniers|length }}
+                    </div>
+
+                    <div class="text-muted">
+                        Derniers colis
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold">
+                        {{ stats.incidents|length }}
+                    </div>
+
+                    <div class="text-muted">
+                        Incidents
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 card-title mb-3">
+                        Colis par statut
+                    </h2>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">
+                                        Statut
+                                    </th>
+
+                                    <th
+                                        scope="col"
+                                        class="text-end"
+                                    >
+                                        Nombre
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for statistique in stats.parStatut %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge {{ statistique.statut.badgeClass }}">
+                                                {{ statistique.statut.label }}
+                                            </span>
+                                        </td>
+
+                                        <td class="text-end fw-semibold">
+                                            {{ statistique.total }}
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td
+                                            colspan="2"
+                                            class="text-center text-muted py-4"
+                                        >
+                                            Aucun colis enregistré.
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 card-title mb-0">
+                            Derniers colis
+                        </h2>
+
+                        <a
+                            href="{{ path('app_colis_index') }}"
+                            class="btn btn-sm btn-outline-secondary"
+                        >
+                            Voir tous les colis
+                        </a>
+                    </div>
+
+                    <div class="list-group list-group-flush">
+                        {% for colis in stats.derniers %}
+                            <a
+                                href="{{ path('app_colis_show', {
+                                    id: colis.id
+                                }) }}"
+                                class="list-group-item list-group-item-action px-0 py-3"
+                            >
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div>
+                                        <div class="fw-semibold">
+                                            {{ colis.numeroSuivi }}
+                                        </div>
+
+                                        <div class="text-muted">
+                                            {{ colis.destinataire }}
+                                        </div>
+                                    </div>
+
+                                    <span class="badge {{ colis.statut.badgeClass }}">
+                                        {{ colis.statut.label }}
+                                    </span>
+                                </div>
+                            </a>
+                        {% else %}
+                            <div class="text-center text-muted py-4">
+                                Aucun colis récent.
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if stats.incidents is not empty %}
+        <div class="card border-danger shadow-sm mt-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 text-danger mb-0">
+                        Colis en incident
+                    </h2>
+
+                    <span class="badge bg-danger">
+                        {{ stats.incidents|length }}
+                    </span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">
+                                    Numéro de suivi
+                                </th>
+
+                                <th scope="col">
+                                    Destinataire
+                                </th>
+
+                                <th scope="col">
+                                    Ville
+                                </th>
+
+                                <th scope="col">
+                                    Date de création
+                                </th>
+
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for colis in stats.incidents %}
+                                <tr>
+                                    <td class="fw-semibold">
+                                        {{ colis.numeroSuivi }}
+                                    </td>
+
+                                    <td>
+                                        {{ colis.destinataire }}
+                                    </td>
+
+                                    <td>
+                                        {{ colis.villeLivraison }}
+                                    </td>
+
+                                    <td>
+                                        {{ colis.createdAt|date('d/m/Y H:i') }}
+                                    </td>
+
+                                    <td class="text-end">
+                                        <a
+                                            href="{{ path('app_colis_show', {
+                                                id: colis.id
+                                            }) }}"
+                                            class="btn btn-sm btn-outline-danger"
+                                        >
+                                            Consulter
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

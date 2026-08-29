@@ -1,0 +1,184 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">Colis</h1>
+
+        <a
+            class="btn btn-dark"
+            href="{{ path('app_colis_new') }}"
+        >
+            Nouveau colis
+        </a>
+    </div>
+
+    <form
+        method="get"
+        action="{{ path('app_colis_index') }}"
+        class="row g-2 mb-3"
+    >
+        <div class="col-md">
+            <label
+                for="recherche"
+                class="form-label visually-hidden"
+            >
+                Rechercher
+            </label>
+
+            <input
+                id="recherche"
+                type="search"
+                class="form-control"
+                name="q"
+                placeholder="N° suivi, destinataire, client"
+                value="{{ filtres.q }}"
+            >
+        </div>
+
+        <div class="col-md">
+            <label
+                for="ville"
+                class="form-label visually-hidden"
+            >
+                Ville
+            </label>
+
+            <input
+                id="ville"
+                type="search"
+                class="form-control"
+                name="ville"
+                placeholder="Ville"
+                value="{{ filtres.ville }}"
+            >
+        </div>
+
+        <div class="col-md">
+            <label
+                for="statut"
+                class="form-label visually-hidden"
+            >
+                Statut
+            </label>
+
+            <select
+                id="statut"
+                class="form-select"
+                name="statut"
+            >
+                <option value="">
+                    Tous les statuts
+                </option>
+
+                {% for statut in statuts %}
+                    <option
+                        value="{{ statut.value }}"
+                        {{ filtres.statut == statut.value ? 'selected' : '' }}
+                    >
+                        {{ statut.label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <button
+                type="submit"
+                class="btn btn-dark"
+            >
+                Filtrer
+            </button>
+        </div>
+
+        {% if filtres.q or filtres.ville or filtres.statut %}
+            <div class="col-auto">
+                <a
+                    class="btn btn-outline-secondary"
+                    href="{{ path('app_colis_index') }}"
+                >
+                    Réinitialiser
+                </a>
+            </div>
+        {% endif %}
+    </form>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Suivi</th>
+                            <th scope="col">Client</th>
+                            <th scope="col">Destinataire</th>
+                            <th scope="col">Ville</th>
+                            <th scope="col">Statut</th>
+                            <th scope="col" class="text-end">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for colis in items %}
+                            <tr>
+                                <td>
+                                    <span class="fw-semibold">
+                                        {{ colis.numeroSuivi }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ colis.client.nom }}
+                                </td>
+
+                                <td>
+                                    {{ colis.destinataire }}
+                                </td>
+
+                                <td>
+                                    {{ colis.villeLivraison }}
+                                </td>
+
+                                <td>
+                                    <span class="badge {{ colis.statut.badgeClass }}">
+                                        {{ colis.statut.label }}
+                                    </span>
+                                </td>
+
+                                <td class="text-end text-nowrap">
+                                    <a
+                                        class="btn btn-sm btn-outline-dark"
+                                        href="{{ path('app_colis_show', {
+                                            id: colis.id
+                                        }) }}"
+                                    >
+                                        Suivre
+                                    </a>
+
+                                    <a
+                                        class="btn btn-sm btn-outline-secondary"
+                                        href="{{ path('app_colis_edit', {
+                                            id: colis.id
+                                        }) }}"
+                                    >
+                                        Modifier
+                                    </a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td
+                                    colspan="6"
+                                    class="text-center text-muted py-4"
+                                >
+                                    Aucun colis ne correspond aux critères de recherche.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+	<div class='d-flex justify-content-between mb-3'>
+		<h1>Clients</h1>
+		<a class='btn btn-dark' href='{{ path('app_client_new') }}'>Ajouter</a>
+	</div>
+	<form class='mb-3'>
+<input class='form-control' name='q' value='{{ q }}' placeholder='Recherche'></form>
+	<div class='card p-3'>
+		<table class='table table-hover'>
+			<tr>
+				<th>ID</th>
+				<th>Nom</th>
+				<th>Ville</th>
+				<th>Actions</th>
+			</tr>
+			{% for item in items %}
+				<tr>
+					<td>{{ item.id }}</td>
+					<td>{{ item.nom }}</td>
+					<td>{{ item.ville }}</td>
+					<td>
+						<a href='{{ path('app_client_show',{id:item.id}) }}'>Voir</a>
+						·
+						<a href='{{ path('app_client_edit',{id:item.id}) }}'>Modifier</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</table>
+	</div>
+{% endblock %}

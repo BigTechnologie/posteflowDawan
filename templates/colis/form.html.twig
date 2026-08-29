@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="mb-1">
+                {{ page_title|default('Formulaire colis') }}
+            </h1>
+
+            {% if colis.id %}
+                <p class="text-muted mb-0">
+                    Modification du colis {{ colis.numeroSuivi }}
+                </p>
+            {% else %}
+                <p class="text-muted mb-0">
+                    Enregistrement d’un nouveau colis
+                </p>
+            {% endif %}
+        </div>
+
+        <a
+            class="btn btn-outline-secondary"
+            href="{{ path('app_colis_index') }}"
+        >
+            Retour à la liste
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {{ form_start(form) }}
+
+                {{ form_errors(form) }}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form_row(form.numeroSuivi) }}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form_row(form.statut) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form_row(form.client) }}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form_row(form.agenceDepot) }}
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h2 class="h5 mb-3">
+                    Informations de livraison
+                </h2>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form_row(form.destinataire) }}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form_row(form.poidsKg) }}
+                    </div>
+                </div>
+
+                {{ form_row(form.adresseLivraison) }}
+
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ form_row(form.codePostalLivraison) }}
+                    </div>
+
+                    <div class="col-md-8">
+                        {{ form_row(form.villeLivraison) }}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a
+                        class="btn btn-outline-secondary"
+                        href="{{ path('app_colis_index') }}"
+                    >
+                        Annuler
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn btn-dark"
+                    >
+                        {% if colis.id %}
+                            Enregistrer les modifications
+                        {% else %}
+                            Créer le colis
+                        {% endif %}
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

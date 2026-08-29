@@ -1,0 +1,193 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="mb-1">
+                Colis {{ colis.numeroSuivi }}
+            </h1>
+
+            <span class="badge {{ colis.statut.badgeClass }}">
+                {{ colis.statut.label }}
+            </span>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a
+                class="btn btn-outline-secondary"
+                href="{{ path('app_colis_index') }}"
+            >
+                Retour à la liste
+            </a>
+
+            <a
+                class="btn btn-outline-dark"
+                href="{{ path('app_colis_edit', {
+                    id: colis.id
+                }) }}"
+            >
+                Modifier
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h5 card-title mb-3">
+                        Détails du colis
+                    </h2>
+
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">
+                            Numéro de suivi
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            {{ colis.numeroSuivi }}
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Client
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            {{ colis.client.nom }}
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Agence de dépôt
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            {{ colis.agenceDepot.nom }}
+                            — {{ colis.agenceDepot.ville }}
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Destinataire
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            {{ colis.destinataire }}
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Adresse de livraison
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            {{ colis.adresseLivraison }}<br>
+                            {{ colis.codePostalLivraison }}
+                            {{ colis.villeLivraison }}
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Poids
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            {{ colis.poidsKg|number_format(2, ',', ' ') }} kg
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Statut actuel
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            <span class="badge {{ colis.statut.badgeClass }}">
+                                {{ colis.statut.label }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Date de création
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            {{ colis.createdAt|date('d/m/Y à H:i') }}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5 card-title mb-3">
+                        Historique du suivi
+                    </h2>
+
+                    {% if colis.mouvements is not empty %}
+                        <div class="list-group list-group-flush">
+                            {% for mouvement in colis.mouvements %}
+                                <div class="list-group-item px-0 py-3">
+                                    <div class="d-flex justify-content-between align-items-start gap-3">
+                                        <div>
+                                            <div class="mb-2">
+                                                <span class="badge {{ mouvement.statut.badgeClass }}">
+                                                    {{ mouvement.statut.label }}
+                                                </span>
+                                            </div>
+
+                                            <div>
+                                                <strong>Lieu :</strong>
+                                                {{ mouvement.lieu }}
+                                            </div>
+
+                                            {% if mouvement.commentaire %}
+                                                <div class="text-muted mt-1">
+                                                    {{ mouvement.commentaire }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <time
+                                            class="text-muted text-nowrap"
+                                            datetime="{{ mouvement.createdAt|date('c') }}"
+                                        >
+                                            {{ mouvement.createdAt|date('d/m/Y H:i') }}
+                                        </time>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">
+                            Aucun mouvement n’a encore été enregistré pour ce colis.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5 card-title mb-3">
+                        Changer le statut
+                    </h2>
+
+                    <p class="text-muted">
+                        Le changement de statut sera également enregistré dans l’historique du colis.
+                    </p>
+
+                    {{ form_start(form) }}
+
+                        {{ form_row(form.statut) }}
+                        {{ form_row(form.lieu) }}
+                        {{ form_row(form.commentaire) }}
+
+                        <button
+                            type="submit"
+                            class="btn btn-dark w-100 mt-2"
+                        >
+                            Mettre à jour le statut
+                        </button>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
