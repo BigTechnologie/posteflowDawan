@@ -8,6 +8,7 @@ use App\Enum\StatutColis;
 use App\Form\ColisType;
 use App\Form\MouvementColisType;
 use App\Repository\ColisRepository;
+use App\Service\TrackingService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -85,7 +86,7 @@ class ColisController extends AbstractController
     public function show(
         Colis $colis,
         Request $request,
-        EntityManagerInterface $entityManager
+        TrackingService $trackingService
     ): Response {
         
         $mouvement = (new MouvementColis())
@@ -100,20 +101,19 @@ class ColisController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             
-            $statut = $mouvement->getStatut();
-
-            $colis->setStatut($statut);
-
-            $entityManager->persist($mouvement);
-
-            $entityManager->flush();
+            $trackingService->changerStatut(
+                $colis,
+                $mouvement->getStatut(),
+                $mouvement->getLieu(),
+                $mouvement->getCommentaire()
+            );
 
             $this->addFlash(
                 'success',
                 sprintf(
                     'Le colis %s possède maintenant le statut « %s ».',
                     $colis->getNumeroSuivi(),
-                    $statut->label()
+                    $mouvement->getStatut()->label()
                 )
             );
 

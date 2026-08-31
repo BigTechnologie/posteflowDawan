@@ -21,22 +21,52 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $objectManager): void
     {
-        $admin = (new User())
-            ->setEmail('admin@posteflow.test')
-            ->setNom('Administrateur PosteFlow')
-            ->setRoles([
-                User::ROLE_ADMIN,
-            ]);
+        $utilisateurs = [
+            [
+                'email' => 'admin@posteflow.test',
+                'nom' => 'Administrateur PosteFlow',
+                'roles' => [
+                    User::ROLE_ADMIN,
+                ],
+                'password' => 'admin1234',
+            ],
+            [
+                'email' => 'agent@posteflow.test',
+                'nom' => 'Agent PosteFlow',
+                'roles' => [
+                    User::ROLE_AGENT,
+                ],
+                'password' => 'agent1234',
+            ],
+            [
+                'email' => 'user@posteflow.test',
+                'nom' => 'Utilisateur PosteFlow',
+                'roles' => [
+                    User::ROLE_USER,
+                ],
+                'password' => 'user1234',
+            ],
+        ];
 
-        $admin->setPassword(
-            $this->passwordHasher->hashPassword(
-                $admin,
-                'admin1234'
-            )
-        );
+        foreach ($utilisateurs as $donneesUtilisateur) {
+            $utilisateur = (new User())
+                ->setEmail($donneesUtilisateur['email'])
+                ->setNom($donneesUtilisateur['nom'])
+                ->setRoles($donneesUtilisateur['roles']);
 
-        $objectManager->persist($admin);
+            $utilisateur->setPassword(
+                $this->passwordHasher->hashPassword(
+                    $utilisateur,
+                    $donneesUtilisateur['password']
+                )
+            );
 
+            $objectManager->persist($utilisateur);
+        }
+
+        /*
+         * Création des agences.
+         */
         $donneesAgences = [
             [
                 'nom' => 'Paris Louvre',
@@ -74,6 +104,9 @@ class AppFixtures extends Fixture
             $agences[] = $agence;
         }
 
+        /*
+         * Création des clients.
+         */
         $nomsClients = [
             'Diallo',
             'Martin',
@@ -87,7 +120,9 @@ class AppFixtures extends Fixture
         $clients = [];
 
         foreach ($nomsClients as $index => $nom) {
-            $agence = $agences[$index % count($agences)];
+            $agence = $agences[
+                $index % count($agences)
+            ];
 
             $client = (new Client())
                 ->setNom($nom)
@@ -116,8 +151,14 @@ class AppFixtures extends Fixture
             $clients[] = $client;
         }
 
+        /*
+         * Statuts disponibles sous forme d’objets enum.
+         */
         $statuts = StatutColis::cases();
 
+        /*
+         * Création des colis et de leurs mouvements.
+         */
         for ($index = 1; $index <= 18; ++$index) {
             $statut = $statuts[
                 $index % count($statuts)
@@ -170,6 +211,10 @@ class AppFixtures extends Fixture
                     )
                 );
 
+            /*
+             * Premier mouvement obligatoire :
+             * création du colis.
+             */
             $mouvementCreation = (new MouvementColis())
                 ->setStatut(StatutColis::CREE)
                 ->setLieu(
