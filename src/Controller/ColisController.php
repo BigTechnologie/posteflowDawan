@@ -8,6 +8,7 @@ use App\Enum\StatutColis;
 use App\Form\ColisType;
 use App\Form\MouvementColisType;
 use App\Repository\ColisRepository;
+use App\Security\Voter\ColisVoter;
 use App\Service\TrackingService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,29 +23,31 @@ class ColisController extends AbstractController
     public function index(
         Request $request,
         ColisRepository $colisRepository
-    ): Response {
+    ): Response 
+    {
+        
+        $this->denyAccessUnlessGranted(
+            ColisVoter::LIST
+        );
+
         $recherche = $request->query->getString('q');
         $statutValeur = $request->query->getString('statut');
         $ville = $request->query->getString('ville');
 
         $statut = $statutValeur !== ''
             ? StatutColis::tryFrom($statutValeur)
-            : null; 
-        
+            : null;
 
         return $this->render('colis/index.html.twig', [
-            
             'items' => $colisRepository->rechercher(
                 $recherche !== '' ? $recherche : null,
                 $statut,
                 $ville !== '' ? $ville : null
             ),
-
             'statuts' => StatutColis::cases(),
-
             'filtres' => [
                 'q' => $recherche,
-                'statut' => $statut,
+                'statut' => $statutValeur,
                 'ville' => $ville,
             ],
         ]);
@@ -55,9 +58,18 @@ class ColisController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
+        
+        $this->denyAccessUnlessGranted(
+            ColisVoter::CREATE
+        );
+
         $colis = new Colis();
 
-        $form = $this->createForm(ColisType::class, $colis);
+        $form = $this->createForm(
+            ColisType::class,
+            $colis
+        );
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -72,7 +84,9 @@ class ColisController extends AbstractController
                 )
             );
 
-            return $this->redirectToRoute('app_colis_index');
+            return $this->redirectToRoute(
+                'app_colis_index'
+            );
         }
 
         return $this->render('colis/form.html.twig', [
@@ -89,6 +103,11 @@ class ColisController extends AbstractController
         TrackingService $trackingService
     ): Response {
         
+        $this->denyAccessUnlessGranted(
+            ColisVoter::VIEW,
+            $colis 
+        );
+
         $mouvement = (new MouvementColis())
             ->setColis($colis);
 
@@ -99,8 +118,15 @@ class ColisController extends AbstractController
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted()) {
             
+            $this->denyAccessUnlessGranted(
+                ColisVoter::CHANGE_STATUS,
+                $colis
+            );
+        }
+
+        if ($form->isSubmitted() && $form->isValid()) {
             $trackingService->changerStatut(
                 $colis,
                 $mouvement->getStatut(),
@@ -117,9 +143,12 @@ class ColisController extends AbstractController
                 )
             );
 
-            return $this->redirectToRoute('app_colis_show', [
-                'id' => $colis->getId(),
-            ]);
+            return $this->redirectToRoute(
+                'app_colis_show',
+                [
+                    'id' => $colis->getId(),
+                ]
+            );
         }
 
         return $this->render('colis/show.html.twig', [
@@ -129,15 +158,27 @@ class ColisController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_colis_edit', methods: ['GET', 'POST'])]
+    // #[IsGranted(attribute: ColisVoter::EDIT, subject: 'colis')]
     public function edit(
         Colis $colis,
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        $form = $this->createForm(ColisType::class, $colis);
+        
+        $this->denyAccessUnlessGranted(
+            ColisVoter::EDIT,
+            $colis
+        );
+
+        $form = $this->createForm(
+            ColisType::class,
+            $colis
+        );
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            
             $entityManager->flush();
 
             $this->addFlash(
@@ -148,9 +189,12 @@ class ColisController extends AbstractController
                 )
             );
 
-            return $this->redirectToRoute('app_colis_show', [
-                'id' => $colis->getId(),
-            ]);
+            return $this->redirectToRoute(
+                'app_colis_show',
+                [
+                    'id' => $colis->getId(),
+                ]
+            );
         }
 
         return $this->render('colis/form.html.twig', [
@@ -170,6 +214,12 @@ class ColisController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
+        
+        $this->denyAccessUnlessGranted(
+            ColisVoter::DELETE,
+            $colis
+        );
+
         $token = $request->request->getString('_token');
 
         if ($this->isCsrfTokenValid(
@@ -195,6 +245,8 @@ class ColisController extends AbstractController
             );
         }
 
-        return $this->redirectToRoute('app_colis_index');
+        return $this->redirectToRoute(
+            'app_colis_index'
+        );
     }
 }

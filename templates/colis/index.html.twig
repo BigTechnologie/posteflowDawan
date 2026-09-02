@@ -1,15 +1,23 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}
+    Colis — {{ parent() }}
+{% endblock %}
+
 {% block body %}
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="mb-0">Colis</h1>
+        <h1 class="mb-0">
+            Colis
+        </h1>
 
-        <a
-            class="btn btn-dark"
-            href="{{ path('app_colis_new') }}"
-        >
-            Nouveau colis
-        </a>
+        {% if is_granted('COLIS_CREATE') %}
+            <a
+                class="btn btn-dark"
+                href="{{ path('app_colis_new') }}"
+            >
+                Nouveau colis
+            </a>
+        {% endif %}
     </div>
 
     <form
@@ -147,23 +155,28 @@
                                 </td>
 
                                 <td class="text-end text-nowrap">
-                                    <a
-                                        class="btn btn-sm btn-outline-dark"
-                                        href="{{ path('app_colis_show', {
-                                            id: colis.id
-                                        }) }}"
-                                    >
-                                        Suivre
-                                    </a>
+                                    {# Il y a un sujet à transmettre : l’entité colis. #}
+                                    {% if is_granted('COLIS_VIEW', colis) %}
+                                        <a
+                                            class="btn btn-sm btn-outline-dark"
+                                            href="{{ path('app_colis_show', {
+                                                id: colis.id
+                                            }) }}"
+                                        >
+                                            Suivre
+                                        </a>
+                                    {% endif %}
 
-                                    <a
-                                        class="btn btn-sm btn-outline-secondary"
-                                        href="{{ path('app_colis_edit', {
-                                            id: colis.id
-                                        }) }}"
-                                    >
-                                        Modifier
-                                    </a>
+                                    {% if is_granted('COLIS_EDIT', colis) %}
+                                        <a
+                                            class="btn btn-sm btn-outline-secondary"
+                                            href="{{ path('app_colis_edit', {
+                                                id: colis.id
+                                            }) }}"
+                                        >
+                                            Modifier
+                                        </a>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% else %}

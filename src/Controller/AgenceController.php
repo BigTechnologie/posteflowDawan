@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Agence;
 use App\Form\AgenceType;
 use App\Repository\AgenceRepository;
+use App\Security\Voter\AgenceVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,71 +15,184 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/agence')]
 class AgenceController extends AbstractController
 {
-    // Cette méthode affiche la liste des agences
-    #[Route('', name: 'app_agence_index')]
-    public function index(Request $request, AgenceRepository $repo): Response
-    {
-        $items = method_exists($repo, 'rechercher') ? $repo->rechercher($request->query->get('q')) : $repo->findBy([], ['id' => 'DESC']);
+    #[Route('', name: 'app_agence_index', methods: ['GET'])]
+    public function index(
+        Request $request,
+        AgenceRepository $agenceRepository
+    ): Response {
+        /*
+         * Tous les utilisateurs authentifiés peuvent
+         * consulter la liste des agences.
+         */
+        $this->denyAccessUnlessGranted(
+            AgenceVoter::LIST
+        );
+
+        $recherche = $request->query->getString('q');
+
+        $agences = method_exists(
+            $agenceRepository,
+            'rechercher'
+        )
+            ? $agenceRepository->rechercher(
+                $recherche !== '' ? $recherche : null
+            )
+            : $agenceRepository->findBy( 
+                [],
+                ['id' => 'DESC']
+            );
+
         return $this->render('agence/index.html.twig', [
-            'items' => $items,
-            'q' => $request->query->get('q')
+            'items' => $agences,
+            'q' => $recherche,
         ]);
     }
 
-    // Cette méthode affiche le formulaire de création d'une nouvelle agence
-    #[Route('/new', name: 'app_agence_new')]
-    public function new(Request $request, EntityManagerInterface $em): Response
-    {
-        $item = new Agence();
-        $form = $this->createForm(AgenceType::class, $item);
+    #[Route('/new', name: 'app_agence_new', methods: ['GET', 'POST'])]
+    public function new(
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        
+        $this->denyAccessUnlessGranted(
+            AgenceVoter::CREATE
+        );
+
+        $agence = new Agence();
+
+        $form = $this->createForm(
+            AgenceType::class,
+            $agence
+        );
+
         $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($item);
-            $em->flush();
-            $this->addFlash('success', 'Enregistrement créé.');
-            return $this->redirectToRoute('app_agence_index');
+            $entityManager->persist($agence);
+            $entityManager->flush();
+
+            $this->addFlash(
+                'success',
+                'L’agence a été créée avec succès.'
+            );
+
+            return $this->redirectToRoute(
+                'app_agence_index'
+            );
         }
+
         return $this->render('agence/form.html.twig', [
             'form' => $form,
-            'item' => $item
+            'item' => $agence,
         ]);
     }
 
-    // Cette méthode affiche les détails d'une agence
-    #[Route('/{id}', name: 'app_agence_show', requirements: ['id' => '\\d+'])]
-    public function show(Agence $item): Response
-    {
+    #[Route(
+        '/{id}',
+        name: 'app_agence_show',
+        requirements: ['id' => '\d+'],
+        methods: ['GET']
+    )]
+    public function show(
+        Agence $agence
+    ): Response {
+        
+        $this->denyAccessUnlessGranted(
+            AgenceVoter::VIEW,
+            $agence
+        );
+
         return $this->render('agence/show.html.twig', [
-            'item' => $item
+            'item' => $agence,
         ]);
     }
 
-    // Cette méthode affiche le formulaire de modification d'une agence
-    #[Route('/{id}/edit', name: 'app_agence_edit')]
-    public function edit(Agence $item, Request $request, EntityManagerInterface $em): Response
-    {
-        $form = $this->createForm(AgenceType::class, $item);
+    #[Route(
+        '/{id}/edit',
+        name: 'app_agence_edit',
+        requirements: ['id' => '\d+'],
+        methods: ['GET', 'POST']
+    )]
+    public function edit(
+        Agence $agence,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        /*
+         * La modification d’une agence est réservée
+         * aux administrateurs.
+         */
+        $this->denyAccessUnlessGranted(
+            AgenceVoter::EDIT,
+            $agence
+        );
+
+        $form = $this->createForm(
+            AgenceType::class,
+            $agence
+        );
+
         $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
-            $this->addFlash('success', 'Modification enregistrée.');
-            return $this->redirectToRoute('app_agence_index');
+           
+            $entityManager->flush();
+
+            $this->addFlash(
+                'success',
+                'L’agence a été modifiée avec succès.'
+            );
+
+            return $this->redirectToRoute(
+                'app_agence_index'
+            );
         }
+
         return $this->render('agence/form.html.twig', [
             'form' => $form,
-            'item' => $item
+            'item' => $agence,
         ]);
     }
 
-    // Cette méthode supprime une agence
-    #[Route('/{id}/delete', name: 'app_agence_delete', methods: ['POST'])]
-    public function delete(Agence $item, Request $request, EntityManagerInterface $em): Response
-    {
-        if ($this->isCsrfTokenValid('delete' . $item->getId(), $request->request->get('_token'))) {
-            $em->remove($item);
-            $em->flush();
-            $this->addFlash('success', 'Suppression effectuée.');
+    #[Route(
+        '/{id}/delete',
+        name: 'app_agence_delete',
+        requirements: ['id' => '\d+'],
+        methods: ['POST']
+    )]
+    public function delete(
+        Agence $agence,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        
+        $this->denyAccessUnlessGranted(
+            AgenceVoter::DELETE,
+            $agence
+        );
+
+        $token = $request->request->getString('_token');
+
+        if ($this->isCsrfTokenValid(
+            'delete'.$agence->getId(),
+            $token
+        )) {
+            $entityManager->remove($agence);
+            $entityManager->flush();
+
+            $this->addFlash(
+                'success',
+                'L’agence a été supprimée.'
+            );
+        } else {
+            $this->addFlash(
+                'danger',
+                'Le jeton de sécurité est invalide. L’agence n’a pas été supprimée.'
+            );
         }
-        return $this->redirectToRoute('app_agence_index');
+
+        return $this->redirectToRoute(
+            'app_agence_index'
+        );
     }
 }

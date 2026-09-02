@@ -1,13 +1,66 @@
 {% extends 'base.html.twig' %}
+
+{% block title %}
+    Formulaire agence — {{ parent() }}
+{% endblock %}
+
 {% block body %}
-	<h1>Formulaire Agences</h1>
-	<div class='card p-3'>
-		{{ form_start(form) }}
-		{{ form_widget(form) }}
-		<button class='btn btn-dark mt-3'>Enregistrer</button>
-		<a class='btn btn-link mt-3' href='{{ path('app_agence_index') }}'>
-			Retour
-		</a>
-		{{ form_end(form) }}
-	</div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="mb-1">
+                {% if item.id %}
+                    Modifier une agence
+                {% else %}
+                    Ajouter une agence
+                {% endif %}
+            </h1>
+
+            <p class="text-muted mb-0">
+                {% if item.id %}
+                    Modification de {{ item.nom }}
+                {% else %}
+                    Création d’une nouvelle agence
+                {% endif %}
+            </p>
+        </div>
+
+        <a
+            class="btn btn-outline-secondary"
+            href="{{ path('app_agence_index') }}"
+        >
+            Retour à la liste
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {{ form_start(form) }}
+
+                {{ form_errors(form) }}
+
+                {{ form_widget(form) }}
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a
+                        class="btn btn-outline-secondary"
+                        href="{{ path('app_agence_index') }}"
+                    >
+                        Annuler
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn btn-dark"
+                    >
+                        {% if item.id %}
+                            Enregistrer les modifications
+                        {% else %}
+                            Créer l’agence
+                        {% endif %}
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
 {% endblock %}

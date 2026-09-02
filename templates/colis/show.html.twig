@@ -1,5 +1,9 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}
+    {{ colis.numeroSuivi }} — {{ parent() }}
+{% endblock %}
+
 {% block body %}
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
@@ -12,7 +16,7 @@
             </span>
         </div>
 
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
             <a
                 class="btn btn-outline-secondary"
                 href="{{ path('app_colis_index') }}"
@@ -20,19 +24,49 @@
                 Retour à la liste
             </a>
 
-            <a
-                class="btn btn-outline-dark"
-                href="{{ path('app_colis_edit', {
-                    id: colis.id
-                }) }}"
-            >
-                Modifier
-            </a>
+            {% if is_granted('COLIS_EDIT', colis) %}
+                <a
+                    class="btn btn-outline-dark"
+                    href="{{ path('app_colis_edit', {
+                        id: colis.id
+                    }) }}"
+                >
+                    Modifier
+                </a>
+            {% endif %}
+
+            {% if is_granted('COLIS_DELETE', colis) %}
+                <form
+                    method="post"
+                    action="{{ path('app_colis_delete', {
+                        id: colis.id
+                    }) }}"
+                    onsubmit="return confirm('Confirmer la suppression de ce colis ?');"
+                >
+                    <input
+                        type="hidden"
+                        name="_token"
+                        value="{{ csrf_token('delete' ~ colis.id) }}"
+                    >
+
+                    <button
+                        type="submit"
+                        class="btn btn-outline-danger"
+                    >
+                        Supprimer
+                    </button>
+                </form>
+            {% endif %}
         </div>
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-7">
+        <div
+            class="{{ is_granted('COLIS_CHANGE_STATUS', colis)
+                ? 'col-lg-7'
+                : 'col-12'
+            }}"
+        >
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h2 class="h5 card-title mb-3">
@@ -161,33 +195,35 @@
             </div>
         </div>
 
-        <div class="col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h2 class="h5 card-title mb-3">
-                        Changer le statut
-                    </h2>
+        {% if is_granted('COLIS_CHANGE_STATUS', colis) %}
+            <div class="col-lg-5">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="h5 card-title mb-3">
+                            Changer le statut
+                        </h2>
 
-                    <p class="text-muted">
-                        Le changement de statut sera également enregistré dans l’historique du colis.
-                    </p>
+                        <p class="text-muted">
+                            Le changement de statut sera également enregistré dans l’historique du colis.
+                        </p>
 
-                    {{ form_start(form) }}
+                        {{ form_start(form) }}
 
-                        {{ form_row(form.statut) }}
-                        {{ form_row(form.lieu) }}
-                        {{ form_row(form.commentaire) }}
+                            {{ form_row(form.statut) }}
+                            {{ form_row(form.lieu) }}
+                            {{ form_row(form.commentaire) }}
 
-                        <button
-                            type="submit"
-                            class="btn btn-dark w-100 mt-2"
-                        >
-                            Mettre à jour le statut
-                        </button>
+                            <button
+                                type="submit"
+                                class="btn btn-dark w-100 mt-2"
+                            >
+                                Mettre à jour le statut
+                            </button>
 
-                    {{ form_end(form) }}
+                        {{ form_end(form) }}
+                    </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
     </div>
 {% endblock %}

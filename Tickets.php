@@ -50,4 +50,20 @@ ________________________________________________________________________________
 
 PLAN DU TICKET 3 : CRÉER UN DTO DE RECHERCHE
 
+Créer :
+
+ColisSearchDTO
+
+Aujourd'hui, notre contrôleur reçoit :
+
+$request->query->getString('q');
+$request->query->getString('ville');
+$request->query->getString('statut');
+
+Nous pourrions remplacer cela par :
+
+ColisSearchDTO
+
+Le contrôleur deviendrait beaucoup plus élégant.
+
 */

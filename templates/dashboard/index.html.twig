@@ -12,12 +12,14 @@
             </p>
         </div>
 
-        <a
-            class="btn btn-dark"
-            href="{{ path('app_colis_new') }}"
-        >
-            Nouveau colis
-        </a>
+        {% if is_granted('COLIS_CREATE') %}
+            <a
+                class="btn btn-dark"
+                href="{{ path('app_colis_new') }}"
+            >
+                Nouveau colis
+            </a>
+        {% endif %}
     </div>
 
     <div class="row g-3 mb-4">

@@ -1,13 +1,128 @@
 {% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ item.nom }} — {{ parent() }}
+{% endblock %}
+
 {% block body %}
-	<h1>{{ item.nom }}</h1>
-	<div class='card p-3'>
-		<pre>ID: {{ item.id }}
-			Ville: {{ item.ville }}
-		</pre>
-		<a class='btn btn-dark' href='{{ path('app_agence_edit',{id:item.id}) }}'>Modifier</a>
-		<form method='post' action='{{ path('app_agence_delete',{id:item.id}) }}' onsubmit='return confirm("Supprimer ?")'>
-	<input type='hidden' name='_token' value='{{ csrf_token('delete' ~ item.id) }}'><button class='btn btn-danger mt-2'>Supprimer</button>
-		</form>
-	</div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="mb-1">
+                {{ item.nom }}
+            </h1>
+
+            <p class="text-muted mb-0">
+                Fiche agence
+            </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a
+                class="btn btn-outline-secondary"
+                href="{{ path('app_agence_index') }}"
+            >
+                Retour à la liste
+            </a>
+
+            {% if is_granted('AGENCE_EDIT', item) %}
+                <a
+                    class="btn btn-outline-dark"
+                    href="{{ path('app_agence_edit', {
+                        id: item.id
+                    }) }}"
+                >
+                    Modifier
+                </a>
+            {% endif %}
+
+            {% if is_granted('AGENCE_DELETE', item) %}
+                <form
+                    method="post"
+                    action="{{ path('app_agence_delete', {
+                        id: item.id
+                    }) }}"
+                    onsubmit="return confirm('Confirmer la suppression de cette agence ?');"
+                >
+                    <input
+                        type="hidden"
+                        name="_token"
+                        value="{{ csrf_token('delete' ~ item.id) }}"
+                    >
+
+                    <button
+                        type="submit"
+                        class="btn btn-outline-danger"
+                    >
+                        Supprimer
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="h5 mb-3">
+                Informations de l’agence
+            </h2>
+
+            <dl class="row mb-0">
+                <dt class="col-sm-4">
+                    Identifiant
+                </dt>
+
+                <dd class="col-sm-8">
+                    {{ item.id }}
+                </dd>
+
+                <dt class="col-sm-4">
+                    Nom
+                </dt>
+
+                <dd class="col-sm-8">
+                    {{ item.nom }}
+                </dd>
+
+                <dt class="col-sm-4">
+                    Adresse
+                </dt>
+
+                <dd class="col-sm-8">
+                    {{ item.adresse }}
+                </dd>
+
+                <dt class="col-sm-4">
+                    Code postal
+                </dt>
+
+                <dd class="col-sm-8">
+                    {{ item.codePostal }}
+                </dd>
+
+                <dt class="col-sm-4">
+                    Ville
+                </dt>
+
+                <dd class="col-sm-8">
+                    {{ item.ville }}
+                </dd>
+
+                <dt class="col-sm-4">
+                    Statut
+                </dt>
+
+                <dd class="col-sm-8">
+                    {% if item.active %}
+                        <span class="badge bg-success">
+                            Active
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary">
+                            Inactive
+                        </span>
+                    {% endif %}
+                </dd>
+            </dl>
+        </div>
+    </div>
 {% endblock %}

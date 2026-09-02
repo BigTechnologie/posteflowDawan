@@ -1,32 +1,137 @@
 {% extends 'base.html.twig' %}
+
+{% block title %}
+    Agences — {{ parent() }}
+{% endblock %}
+
 {% block body %}
-	<div class='d-flex justify-content-between mb-3'>
-		<h1>Agences</h1>
-		<a class='btn btn-dark' href='{{ path('app_agence_new') }}'>Ajouter</a>
-	</div>
-	<form class='mb-3'>
-		<input class='form-control' name='q' value='{{ q }}' placeholder='Recherche'>
-	</form>
-	<div class='card p-3'>
-		<table class='table table-hover'>
-			<tr>
-				<th>ID</th>
-				<th>Nom</th>
-				<th>Ville</th>
-				<th>Actions</th>
-			</tr>
-			{% for item in items %}
-				<tr>
-					<td>{{ item.id }}</td>
-					<td>{{ item.nom }}</td>
-					<td>{{ item.ville }}</td>
-					<td>
-						<a href='{{ path('app_agence_show',{id:item.id}) }}'>Voir</a>
-						·
-						<a href='{{ path('app_agence_edit',{id:item.id}) }}'>Modifier</a>
-					</td>
-				</tr>
-			{% endfor %}
-		</table>
-	</div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">
+            Agences
+        </h1>
+
+        {# TODO: Ajouter le bouton de visualisation uniquement si l'utilisateur a le droit AGENCE_CREATE #}
+        {% if is_granted('AGENCE_CREATE') %}
+            <a
+                class="btn btn-dark"
+                href="{{ path('app_agence_new') }}"
+            >
+                Ajouter une agence
+            </a>
+        {% endif %}
+    </div>
+
+    <form
+        method="get"
+        action="{{ path('app_agence_index') }}"
+        class="mb-3"
+    >
+        <div class="input-group">
+            <input
+                type="search"
+                class="form-control"
+                name="q"
+                value="{{ q }}"
+                placeholder="Rechercher une agence"
+            >
+
+            <button
+                type="submit"
+                class="btn btn-dark"
+            >
+                Rechercher
+            </button>
+
+            {% if q %}
+                <a
+                    class="btn btn-outline-secondary"
+                    href="{{ path('app_agence_index') }}"
+                >
+                    Réinitialiser
+                </a>
+            {% endif %}
+        </div>
+    </form>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">
+                                ID
+                            </th>
+
+                            <th scope="col">
+                                Nom
+                            </th>
+
+                            <th scope="col">
+                                Ville
+                            </th>
+
+                            <th
+                                scope="col"
+                                class="text-end"
+                            >
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for agence in items %}
+                            <tr>
+                                <td>
+                                    {{ agence.id }}
+                                </td>
+
+                                <td class="fw-semibold">
+                                    {{ agence.nom }}
+                                </td>
+
+                                <td>
+                                    {{ agence.ville }}
+                                </td>
+
+                                <td class="text-end text-nowrap">
+                                    {% if is_granted('AGENCE_VIEW', agence) %} 
+                                        <a
+                                            class="btn btn-sm btn-outline-dark"
+                                            href="{{ path('app_agence_show', {
+                                                id: agence.id
+                                            }) }}"
+                                        >
+                                            Voir
+                                        </a>
+                                    {% endif %}
+
+                                    {% if is_granted('AGENCE_EDIT', agence) %}
+                                        <a
+                                            class="btn btn-sm btn-outline-secondary"
+                                            href="{{ path('app_agence_edit', {
+                                                id: agence.id
+                                            }) }}"
+                                        >
+                                            Modifier
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td
+                                    colspan="4"
+                                    class="text-center text-muted py-4"
+                                >
+                                    Aucune agence ne correspond à la recherche.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}
