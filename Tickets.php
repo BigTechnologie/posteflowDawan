@@ -167,6 +167,14 @@ Le TrackingService ne changera presque plus.
 On ajoutera simplement de nouveaux Listeners.
 
 
+trackingService -> 13:10:00
+Listener Mail -> 13:10:02
+Listener Log -> 13:10:04
+
+Le Ticket 4 est terminé.
+
+4.8 : On peut créer une véritable entité Audit pour persister les événements en base (au lieu de les écrire uniquement dans un fichier).
+
 
 
 
