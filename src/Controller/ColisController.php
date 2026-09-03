@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\DTO\ColisSearchDTO;
 use App\Entity\Colis;
 use App\Entity\MouvementColis;
 use App\Enum\StatutColis;
+use App\Form\ColisSearchType;
 use App\Form\ColisType;
 use App\Form\MouvementColisType;
 use App\Repository\ColisRepository;
@@ -23,33 +25,38 @@ class ColisController extends AbstractController
     public function index(
         Request $request,
         ColisRepository $colisRepository
-    ): Response 
-    {
-        
+    ): Response {
         $this->denyAccessUnlessGranted(
             ColisVoter::LIST
         );
 
-        $recherche = $request->query->getString('q');
-        $statutValeur = $request->query->getString('statut');
-        $ville = $request->query->getString('ville');
+        $search = new ColisSearchDTO();
 
-        $statut = $statutValeur !== ''
-            ? StatutColis::tryFrom($statutValeur)
-            : null;
+        $form = $this->createForm(
+            ColisSearchType::class,
+            $search
+        );
+
+        $form->handleRequest($request);
+
+        /*
+        * Le DTO peut être normalisé avant la recherche,
+        * qu’il y ait ou non des critères.
+        */
+        $search->normalize();
+
+        /*
+        * Si le formulaire contient une valeur invalide,
+        * on n’exécute pas la recherche avec ces critères.
+        */
+        $colis = $form->isSubmitted() && !$form->isValid()
+            ? []
+            : $colisRepository->rechercher($search);
 
         return $this->render('colis/index.html.twig', [
-            'items' => $colisRepository->rechercher(
-                $recherche !== '' ? $recherche : null,
-                $statut,
-                $ville !== '' ? $ville : null
-            ),
-            'statuts' => StatutColis::cases(),
-            'filtres' => [
-                'q' => $recherche,
-                'statut' => $statutValeur,
-                'ville' => $ville,
-            ],
+            'items' => $colis,
+            'searchForm' => $form,
+            'search' => $search,
         ]);
     }
 

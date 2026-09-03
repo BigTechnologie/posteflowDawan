@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\DTO\ColisSearchDTO;
 use App\Entity\Colis;
 use App\Enum\StatutColis;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -15,53 +16,74 @@ class ColisRepository extends ServiceEntityRepository
     }
 
     /**
-     * Recherche des colis à partir de plusieurs critères facultatifs.
+     * Recherche des colis à partir d’un DTO contenant
+     * les différents critères facultatifs.
      *
      * @return list<Colis>
      */
     public function rechercher(
-        ?string $terme = null,
-        ?StatutColis $statut = null,
-        ?string $ville = null
+        ColisSearchDTO $search
     ): array {
-        $queryBuilder = $this->createQueryBuilder('c')
-            ->leftJoin('c.client', 'client')
-            ->addSelect('client')
-            ->leftJoin('c.agenceDepot', 'agence')
-            ->addSelect('agence')
-            ->orderBy('c.createdAt', 'DESC');
+        $queryBuilder = $this->createQueryBuilder('colis') 
+            ->leftJoin('colis.client', 'client') 
+            ->addSelect('client') 
+            ->leftJoin('colis.agenceDepot', 'agence') 
+            ->addSelect('agence') 
+            ->orderBy('colis.createdAt', 'DESC'); 
 
-        if ($terme !== null && trim($terme) !== '') {
-            $terme = trim($terme);
-
-            $queryBuilder
-                ->andWhere(
-                    $queryBuilder->expr()->orX(
-                        'c.numeroSuivi LIKE :terme',
-                        'c.destinataire LIKE :terme',
-                        'client.nom LIKE :terme'
+        /*
+         * Recherche textuelle générale.
+         *
+         * Le terme est recherché dans :
+         *
+         * - le numéro de suivi ;
+         * - le nom du destinataire ;
+         * - le nom du client.
+         */
+        if ($search->terme !== null) {
+            $queryBuilder 
+                ->andWhere( 
+                    $queryBuilder->expr()->orX( // On ajoute une condition OR
+                        'colis.numeroSuivi LIKE :terme', 
+                        'colis.destinataire LIKE :terme', 
+                        'client.nom LIKE :terme' 
                     )
                 )
-                ->setParameter('terme', '%'.$terme.'%');
+                ->setParameter( // Permet de binder le paramètre 'terme' avec la valeur recherchée
+                    'terme', // terme
+                    '%'.$search->terme.'%' // valeur recherchée
+                );
         }
 
-        if ($statut !== null) {
+        /*
+         * Le DTO contient directement un objet StatutColis.
+         */
+        if ($search->statut !== null) {
             $queryBuilder
-                ->andWhere('c.statut = :statut')
-                ->setParameter('statut', $statut);
+                ->andWhere('colis.statut = :statut') 
+                ->setParameter( 
+                    'statut', 
+                    $search->statut 
+                );
         }
 
-        if ($ville !== null && trim($ville) !== '') {
-            $ville = trim($ville);
-
+        /*
+         * Recherche partielle sur la ville de livraison.
+         */
+        if ($search->ville !== null) {
             $queryBuilder
-                ->andWhere('c.villeLivraison LIKE :ville')
-                ->setParameter('ville', '%'.$ville.'%');
+                ->andWhere(
+                    'colis.villeLivraison LIKE :ville' 
+                )
+                ->setParameter(
+                    'ville', // ville
+                    '%'.$search->ville.'%' 
+                );
         }
 
         return $queryBuilder
-            ->getQuery()
-            ->getResult();
+            ->getQuery() // On récupère la requête
+            ->getResult(); // On exécute la requête
     }
 
     /**
@@ -81,7 +103,7 @@ class ColisRepository extends ServiceEntityRepository
             ->groupBy('c.statut')
             ->orderBy('total', 'DESC')
             ->getQuery()
-            ->getArrayResult();
+            ->getArrayResult(); // type: array[]
     }
 
     /**

@@ -66,4 +66,108 @@ ColisSearchDTO
 
 Le contrôleur deviendrait beaucoup plus élégant.
 
+L'OBJECTIF
+
+Pour le moment:
+
+HTTP Request
+|
+Controller
+|
+Repository
+
+__________________
+
+HTTP Request
+|
+Search Form : ColisSearchType.php
+|
+ColisSearchDTO.php
+|
+Repository
+
+Le controller ne manipule plus de chaines
+Il manipule un objet
+
+Objectif :
+
+Dans ce ticket, nous allons améliorer la recherche des colis en regroupant tous les critères, comme le texte recherché, le statut et la ville, dans un objet appelé `ColisSearchDTO`.
+Nous allons également créer un formulaire `ColisSearchType`, puis adapter le contrôleur, le repository et le template Twig.
+Cette organisation permettra d’alléger le contrôleur, d’éviter de multiplier les paramètres dans le repository et de faciliter l’ajout de nouveaux critères de recherche.
+Le formulaire récupérera les critères saisis par l’utilisateur, le DTO les transportera et le repository les utilisera pour construire la requête Doctrine.
+Cette architecture, courante dans les projets Symfony professionnels, rend le code plus lisible, évolutif et facile à maintenir.
+
+_______________________________________________________________________________________________________________________________
+
+
+TICKET 4 : Events & Listeners
+
+Objectif : 
+    - Comprendre le pattern Event-Listener
+    - Créer un Event personnalisé
+    - Dispatch un Event depuis un Service
+    - Créer un Listener pour réagir à l'Event
+    - Journaliser les changements de statut
+    - Créer des Listeners pour des actions métier
+
+LE PLAN DU TICKET 4
+
+Nous allons procéder très progressivement.
+
+4.1
+
+Créer
+
+ColisStatusChangedEvent
+
+4.2
+
+Modifier
+
+TrackingService
+
+pour dispatcher cet Event.
+
+4.3 => On peut créer :
+
+ColisStatusChangedLogger : Permet de journaliser le changement de statut dans les logs Symfony.
+
+ou
+
+ColisStatusChangedListener : Permet de faire des traitements plus complexes quand le statut change.
+
+4.4
+
+Journaliser automatiquement :
+
+Le colis XXX est passé en EN_TRANSIT
+
+4.5
+
+Créer un second Listener 
+
+Notification
+
+4.6
+
+Créer un troisième Listener
+
+Statistiques
+
+4.7
+
+Créer un quatrième Listener
+
+Mail
+
+(pour plus tard avec Mailer)
+
+Le TrackingService ne changera presque plus.
+
+On ajoutera simplement de nouveaux Listeners.
+
+
+
+
+
 */

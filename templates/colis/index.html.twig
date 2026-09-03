@@ -5,110 +5,79 @@
 {% endblock %}
 
 {% block body %}
-    <div class="d-flex justify-content-between align-items-center mb-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
         <h1 class="mb-0">
             Colis
         </h1>
 
         {% if is_granted('COLIS_CREATE') %}
+
             <a
-                class="btn btn-dark"
                 href="{{ path('app_colis_new') }}"
+                class="btn btn-dark"
             >
                 Nouveau colis
             </a>
+
         {% endif %}
+
     </div>
 
-    <form
-        method="get"
-        action="{{ path('app_colis_index') }}"
-        class="row g-2 mb-3"
-    >
-        <div class="col-md">
-            <label
-                for="recherche"
-                class="form-label visually-hidden"
-            >
-                Rechercher
-            </label>
+    <div class="card shadow-sm mb-4">
 
-            <input
-                id="recherche"
-                type="search"
-                class="form-control"
-                name="q"
-                placeholder="N° suivi, destinataire, client"
-                value="{{ filtres.q }}"
-            >
+        <div class="card-body">
+
+            {{ form_start(searchForm, {
+                attr: {
+                    class: 'row g-3 align-items-end'
+                }
+            }) }}
+
+                <div class="col-lg-5">
+
+                    {{ form_row(searchForm.terme) }}
+
+                </div>
+
+                <div class="col-lg-3">
+
+                    {{ form_row(searchForm.ville) }}
+
+                </div>
+
+                <div class="col-lg-2">
+
+                    {{ form_row(searchForm.statut) }}
+
+                </div>
+
+                <div class="col-lg-2">
+                    <div class="d-grid gap-2 d-flex">
+                        <button
+                            class="btn btn-dark"
+                            type="submit"
+                        >
+                            Rechercher
+                        </button>
+
+                        {% if search.hasCriteria %}
+                            <a
+                                href="{{ path('app_colis_index') }}"
+                                class="btn btn-outline-secondary"
+                            >
+                                Réinitialiser
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {{ form_end(searchForm) }}
+
         </div>
 
-        <div class="col-md">
-            <label
-                for="ville"
-                class="form-label visually-hidden"
-            >
-                Ville
-            </label>
-
-            <input
-                id="ville"
-                type="search"
-                class="form-control"
-                name="ville"
-                placeholder="Ville"
-                value="{{ filtres.ville }}"
-            >
-        </div>
-
-        <div class="col-md">
-            <label
-                for="statut"
-                class="form-label visually-hidden"
-            >
-                Statut
-            </label>
-
-            <select
-                id="statut"
-                class="form-select"
-                name="statut"
-            >
-                <option value="">
-                    Tous les statuts
-                </option>
-
-                {% for statut in statuts %}
-                    <option
-                        value="{{ statut.value }}"
-                        {{ filtres.statut == statut.value ? 'selected' : '' }}
-                    >
-                        {{ statut.label }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="col-auto">
-            <button
-                type="submit"
-                class="btn btn-dark"
-            >
-                Filtrer
-            </button>
-        </div>
-
-        {% if filtres.q or filtres.ville or filtres.statut %}
-            <div class="col-auto">
-                <a
-                    class="btn btn-outline-secondary"
-                    href="{{ path('app_colis_index') }}"
-                >
-                    Réinitialiser
-                </a>
-            </div>
-        {% endif %}
-    </form>
+    </div>
 
     <div class="card shadow-sm">
         <div class="card-body">
@@ -121,7 +90,7 @@
                             <th scope="col">Destinataire</th>
                             <th scope="col">Ville</th>
                             <th scope="col">Statut</th>
-                            <th scope="col" class="text-end">
+                            <th class="text-end">
                                 Actions
                             </th>
                         </tr>
@@ -185,7 +154,7 @@
                                     colspan="6"
                                     class="text-center text-muted py-4"
                                 >
-                                    Aucun colis ne correspond aux critères de recherche.
+                                    Aucun colis trouvé.
                                 </td>
                             </tr>
                         {% endfor %}
