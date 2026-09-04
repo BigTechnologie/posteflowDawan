@@ -21,6 +21,12 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $objectManager): void
     {
+        /*
+         * Création des utilisateurs de test.
+         *
+         * Ces comptes permettent de vérifier les différents
+         * niveaux d’autorisation du ColisVoter.
+         */
         $utilisateurs = [
             [
                 'email' => 'admin@posteflow.test',
@@ -231,6 +237,10 @@ class AppFixtures extends Fixture
                 $mouvementCreation
             );
 
+            /*
+             * Si le statut courant est différent de CREE,
+             * nous ajoutons un second mouvement d’historique.
+             */
             if ($statut !== StatutColis::CREE) {
                 $mouvementStatut = (new MouvementColis())
                     ->setStatut($statut)

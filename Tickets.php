@@ -175,6 +175,93 @@ Le Ticket 4 est terminé.
 
 4.8 : On peut créer une véritable entité Audit pour persister les événements en base (au lieu de les écrire uniquement dans un fichier).
 
+_______________________________________________________________________________________________________________________________
+
+// Vérifier et configurer Symfony Messenger
+
+Formulaire de changement de statut
+        |
+TrackingService
+        |
+ColisStatusChangedEvent
+        |
+ColisLivreMessageDispatcher
+        |
+ColisLivreMessage
+        |
+transport async
+        |
+worker messenger:consume
+        |
+ColisLivreMessageHandler
+        |
+log "Notification asynchrone..."
+
+Etapes :
+
+.1 Messenger                         
+.2 ColisLivreMessage                
+.3 Dispatch si LIVRE                
+.4 MessageHandler                   
+.5 Transport async + worker         
+.6 Cycle temps réel                 
+.7 Gestion des échecs / failed      
+.8 Mailtrap / véritable e-mail
+
+ETAPES :
+
+1-
+composer show symfony/messenger
+
+composer require symfony/messenger
+
+* Configuration du fichier messenger.yaml
+* configuration du fichier .env : MESSENGER_TRANSPORT_DSN=doctrine://default?queue_name=async
+
+php bin/console cache:clear
+
+php bin/console messenger:stats
+
+2-
+php bin/console messenger:consume async -vv
+
+php bin/console messenger:stats
+
+Select-String `
+    -Path var\log\dev.log `
+    -Pattern "Notification asynchrone"
+
+3-
+Pour arrêter le worker :
+
+Ctrl + C
+
+4-
+Symfony Mailer + Mailtrap :
+Avant de coder l’envoi réel, on commence par vérifier si Mailer est déjà installé.
+
+composer show symfony/mailer
+
+Si symfony/mailer n’est pas installé, on fera :
+
+composer show symfony/mailer
+
+configurer .env pour le DSN : MAILER_DSN="vos informations Mailtrap"
+
+php bin/console cache:clear
+
+php bin/console debug:container --env-vars | Select-String "MAILER_DSN"
+
+Voir le reste côté projet
+
+L’idée est simple : au lieu de seulement logger :
+
+Notification asynchrone : le colis ... a été livré.
+
+le handler va maintenant envoyer un vrai e-mail au client.
+
+
+
 
 
 
